@@ -1,0 +1,126 @@
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.15rem;
+  text-align: left;
+}
+
+.form-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--neutral-700);
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.required-star {
+  color: var(--danger-500);
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-leading-icon {
+  position: absolute;
+  left: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--neutral-400);
+  pointer-events: none;
+  transition: color var(--transition-fast);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.72rem 0.95rem;
+  font-size: 0.94rem;
+  color: var(--neutral-900);
+  background-color: #ffffff;
+  border: 1.5px solid var(--neutral-200);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  outline: none;
+}
+
+.form-input::placeholder {
+  color: var(--neutral-400);
+}
+
+.form-input.with-icon {
+  padding-left: 2.6rem;
+}
+
+.form-input.with-action {
+  padding-right: 2.6rem;
+}
+
+/* Focus State */
+.form-input:focus {
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.input-wrapper:focus-within .input-leading-icon {
+  color: var(--primary-600);
+}
+
+/* Error State */
+.form-group.has-error .form-input {
+  border-color: var(--danger-500);
+  background-color: #fffafa;
+}
+
+.form-group.has-error .form-input:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.form-group.has-error .input-leading-icon {
+  color: var(--danger-500);
+}
+
+/* Password Toggle Button */
+.password-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem;
+  border-radius: var(--radius-sm);
+  color: var(--neutral-400);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.password-toggle-btn:hover {
+  color: var(--neutral-700);
+  background-color: var(--neutral-100);
+}
+
+/* Helper & Error text */
+.input-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  color: var(--danger-600);
+  font-size: 0.8rem;
+  font-weight: 500;
+  animation: fadeIn 0.2s ease-in;
+}
+
+.input-error-icon {
+  flex-shrink: 0;
+}
+
+.input-helper-text {
+  margin-top: 0.3rem;
+  color: var(--neutral-500);
+  font-size: 0.78rem;
+}
