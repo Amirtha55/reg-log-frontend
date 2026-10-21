@@ -3,36 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import {
   UserCheck,
   Mail,
-  Phone,
   Calendar,
-  Key,
   Database,
   Server,
   LogOut,
-  Copy,
-  CheckCircle
+  CheckCircle,
+  Hash
 } from '../components/common/Icons';
 import { useAuth } from '../context/AuthContext';
-import DemoNotice from '../components/common/DemoNotice';
 import AlertBanner from '../components/common/AlertBanner';
 import './Dashboard.css';
 
 export default function Dashboard() {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
-  const [copiedToken, setCopiedToken] = useState(false);
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'spring'
 
-  // If no user is logged in, show demo guest fallback with prompt to login
   const isGuest = !currentUser;
 
   const displayUser = currentUser || {
-    fullName: 'Guest Demo User',
-    email: 'guest@example.com',
-    phone: '+1 555-000-0000',
-    createdAt: new Date().toISOString(),
-    token: 'demo-guest-token-preview',
-    isDemoSession: true
+    id: '—',
+    name: 'Guest User',
+    email: 'Not authenticated',
+    createdAt: new Date().toISOString()
   };
 
   const handleLogout = () => {
@@ -40,21 +33,17 @@ export default function Dashboard() {
     navigate('/login', {
       state: {
         type: 'info',
-        message: 'You have been logged out of your demo session.'
+        message: 'You have been logged out successfully.'
       }
     });
   };
 
-  const handleCopyToken = () => {
-    navigator.clipboard.writeText(displayUser.token || 'demo-token');
-    setCopiedToken(true);
-    setTimeout(() => setCopiedToken(false), 2000);
-  };
-
-  const formattedDate = new Date(displayUser.createdAt).toLocaleString(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  });
+  const formattedDate = displayUser.createdAt
+    ? new Date(displayUser.createdAt).toLocaleString(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      })
+    : 'N/A';
 
   return (
     <div className="dashboard-page">
@@ -63,35 +52,34 @@ export default function Dashboard() {
         <div className="hero-content">
           <div className="hero-tag">
             <span className="live-dot"></span>
-            Frontend-Only Session Active
+            Spring Boot Backend Connected
           </div>
           <h1 className="hero-title">
-            Welcome, <span className="gradient-text">{displayUser.fullName}</span>!
+            Welcome, <span className="gradient-text">{displayUser.name}</span>!
           </h1>
           <p className="hero-subtitle">
-            You are successfully authenticated in <strong>Demo Mode</strong>. This session is simulated
-            entirely within the React frontend.
+            You are securely authenticated against the live Spring Boot REST API and MySQL database.
           </p>
         </div>
 
         <div className="hero-actions">
-          <button onClick={handleLogout} className="btn-outline-danger">
-            <LogOut size={16} />
-            <span>End Demo Session</span>
-          </button>
+          {currentUser ? (
+            <button onClick={handleLogout} className="btn-outline-danger">
+              <LogOut size={16} />
+              <span>Log Out</span>
+            </button>
+          ) : (
+            <button onClick={() => navigate('/login')} className="btn-primary">
+              <span>Sign In</span>
+            </button>
+          )}
         </div>
       </div>
-
-      {/* Prominent Demo Notice */}
-      <DemoNotice
-        variant="warning"
-        message="IMPORTANT: No backend server or MySQL database is connected yet. User credentials and session tokens are simulated locally in browser memory/localStorage for demonstration and UI testing only."
-      />
 
       {isGuest && (
         <AlertBanner
           type="info"
-          message="You are viewing the dashboard as a guest. Try logging in or creating a new account to test live state transition."
+          message="You are viewing the dashboard without an active session. Please sign in or register to view your profile."
         />
       )}
 
@@ -102,14 +90,14 @@ export default function Dashboard() {
           onClick={() => setActiveTab('profile')}
         >
           <UserCheck size={18} />
-          <span>Demo User Profile</span>
+          <span>User Profile</span>
         </button>
         <button
           className={`tab-btn ${activeTab === 'spring' ? 'active' : ''}`}
           onClick={() => setActiveTab('spring')}
         >
           <Server size={18} />
-          <span>Spring Boot & MySQL Architecture</span>
+          <span>Backend & Database Integration</span>
         </button>
       </div>
 
@@ -124,8 +112,8 @@ export default function Dashboard() {
                   <UserCheck size={20} />
                 </div>
                 <div>
-                  <h2 className="dash-card-title">Submitted Profile Information</h2>
-                  <p className="dash-card-desc">Information submitted during login/registration</p>
+                  <h2 className="dash-card-title">Backend User Record</h2>
+                  <p className="dash-card-desc">Verified account information retrieved from MySQL</p>
                 </div>
               </div>
             </div>
@@ -133,9 +121,16 @@ export default function Dashboard() {
             <div className="dash-card-body">
               <div className="profile-field-row">
                 <span className="field-label">
+                  <Hash size={16} /> User ID:
+                </span>
+                <span className="field-value font-semibold">#{displayUser.id}</span>
+              </div>
+
+              <div className="profile-field-row">
+                <span className="field-label">
                   <UserCheck size={16} /> Full Name:
                 </span>
-                <span className="field-value font-semibold">{displayUser.fullName}</span>
+                <span className="field-value font-semibold">{displayUser.name}</span>
               </div>
 
               <div className="profile-field-row">
@@ -147,32 +142,9 @@ export default function Dashboard() {
 
               <div className="profile-field-row">
                 <span className="field-label">
-                  <Phone size={16} /> Phone Number:
-                </span>
-                <span className="field-value">{displayUser.phone}</span>
-              </div>
-
-              <div className="profile-field-row">
-                <span className="field-label">
-                  <Calendar size={16} /> Session Created:
+                  <Calendar size={16} /> Account Created:
                 </span>
                 <span className="field-value">{formattedDate}</span>
-              </div>
-
-              <div className="profile-field-row">
-                <span className="field-label">
-                  <Key size={16} /> Simulated JWT:
-                </span>
-                <div className="token-field">
-                  <code>{displayUser.token}</code>
-                  <button
-                    onClick={handleCopyToken}
-                    className="copy-token-btn"
-                    title="Copy simulated token"
-                  >
-                    {copiedToken ? <CheckCircle size={14} color="#10b981" /> : <Copy size={14} />}
-                  </button>
-                </div>
               </div>
             </div>
           </div>
@@ -185,8 +157,8 @@ export default function Dashboard() {
                   <Database size={20} />
                 </div>
                 <div>
-                  <h2 className="dash-card-title">Frontend Features Verified</h2>
-                  <p className="dash-card-desc">Working features in this React application</p>
+                  <h2 className="dash-card-title">Live Integration Status</h2>
+                  <p className="dash-card-desc">Production-grade features active</p>
                 </div>
               </div>
             </div>
@@ -196,29 +168,29 @@ export default function Dashboard() {
                 <li>
                   <CheckCircle size={18} className="check-icon" />
                   <div>
-                    <strong>Responsive Layout</strong>
-                    <span>Optimized for mobile phones, tablets, and desktop displays.</span>
+                    <strong>Axios REST Client</strong>
+                    <span>Configured with base URL <code>http://localhost:8080</code> and Vite development proxy.</span>
                   </div>
                 </li>
                 <li>
                   <CheckCircle size={18} className="check-icon" />
                   <div>
-                    <strong>Input Validation</strong>
-                    <span>Real-time email format, phone digits, password match, and required fields.</span>
+                    <strong>Secure Credential Handling</strong>
+                    <span>Passwords are never stored in browser storage. Passwords hashed using BCrypt in MySQL.</span>
                   </div>
                 </li>
                 <li>
                   <CheckCircle size={18} className="check-icon" />
                   <div>
-                    <strong>Show / Hide Password</strong>
-                    <span>Integrated toggle eye on password & confirm password fields.</span>
+                    <strong>Real Backend Validation</strong>
+                    <span>Handles Spring Boot Bean Validation errors and database duplicate email checks (HTTP 409).</span>
                   </div>
                 </li>
                 <li>
                   <CheckCircle size={18} className="check-icon" />
                   <div>
-                    <strong>Modular Architecture</strong>
-                    <span>Reusable components, context API, and centralized auth service.</span>
+                    <strong>Clean Session Management</strong>
+                    <span>Safe user profile persistence across page refreshes with one-click logout.</span>
                   </div>
                 </li>
               </ul>
@@ -232,10 +204,9 @@ export default function Dashboard() {
         <div className="spring-integration-card">
           <div className="spring-header">
             <div>
-              <h2>Java Spring Boot & MySQL Ready Architecture</h2>
+              <h2>Spring Boot REST API &amp; MySQL Status</h2>
               <p>
-                This frontend is designed so you can immediately hook it up to a Spring Boot REST API
-                by switching the mock promises in <code>src/services/authService.js</code> to standard <code>fetch()</code> calls.
+                The frontend communicates directly with the live Spring Boot backend server on port 8080 using JSON payloads.
               </p>
             </div>
           </div>
@@ -252,10 +223,9 @@ export default function Dashboard() {
               <div className="code-snippet-header">JSON Payload Sent From React:</div>
               <pre className="code-block">
 {`{
-  "fullName": "${displayUser.fullName}",
-  "email": "${displayUser.email}",
-  "phone": "${displayUser.phone}",
-  "password": "UserSecurePassword123!"
+  "name": "${displayUser.name || 'John Doe'}",
+  "email": "${displayUser.email || 'user@example.com'}",
+  "password": "••••••••"
 }`}
               </pre>
             </div>
@@ -266,20 +236,20 @@ export default function Dashboard() {
                 <span className="http-method post">POST</span>
                 <code>/api/auth/login</code>
               </div>
-              <p className="endpoint-desc">Validates credentials with Spring Security and returns a JWT token for authorized requests.</p>
+              <p className="endpoint-desc">Validates credentials with BCrypt password encoder and returns user profile.</p>
               
               <div className="code-snippet-header">JSON Payload Sent From React:</div>
               <pre className="code-block">
 {`{
-  "email": "${displayUser.email}",
-  "password": "UserSecurePassword123!"
+  "email": "${displayUser.email || 'user@example.com'}",
+  "password": "••••••••"
 }`}
               </pre>
             </div>
           </div>
 
           <div className="spring-tips">
-            <strong>Backend Integration Tip:</strong> Remember to configure <code>@CrossOrigin(origins = "http://localhost:3000")</code> on your Spring Boot controllers to permit requests from this Vite frontend development server.
+            <strong>Connected Backend:</strong> Spring Boot running on <code>http://localhost:8080</code> with MySQL database persistence.
           </div>
         </div>
       )}

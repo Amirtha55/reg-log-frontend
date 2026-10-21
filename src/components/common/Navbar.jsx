@@ -17,6 +17,8 @@ export default function Navbar() {
 
   const closeMenu = () => setMobileMenuOpen(false);
 
+  const displayName = currentUser?.name || currentUser?.fullName || 'User';
+
   return (
     <header className="navbar-header">
       <div className="navbar-container">
@@ -28,7 +30,6 @@ export default function Navbar() {
           <span className="brand-name">
             Auth<span className="brand-highlight">Flow</span>
           </span>
-          <span className="demo-tag">DEMO</span>
         </NavLink>
 
         {/* Mobile Hamburger Toggle */}
@@ -77,9 +78,9 @@ export default function Navbar() {
 
                 <div className="user-badge" title={currentUser.email}>
                   <div className="user-avatar">
-                    {currentUser.fullName ? currentUser.fullName.charAt(0).toUpperCase() : 'U'}
+                    {displayName.charAt(0).toUpperCase()}
                   </div>
-                  <span className="user-name">{currentUser.fullName || 'Demo User'}</span>
+                  <span className="user-name">{displayName}</span>
                 </div>
 
                 <button type="button" onClick={handleLogout} className="logout-btn" title="Log out">

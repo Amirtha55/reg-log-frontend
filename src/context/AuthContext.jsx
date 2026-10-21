@@ -7,7 +7,7 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Initialize session on initial load
+  // Initialize session on initial mount
   useEffect(() => {
     try {
       const existingUser = getCurrentUser();
@@ -31,7 +31,6 @@ export function AuthProvider({ children }) {
   // Handle Register
   const register = async (userData) => {
     const result = await registerUser(userData);
-    setCurrentUser(result.user);
     return result;
   };
 

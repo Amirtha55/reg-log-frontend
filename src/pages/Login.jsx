@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Mail, Lock, LogIn, Sparkles, ArrowRight } from '../components/common/Icons';
+import { Mail, Lock, LogIn, ArrowRight } from '../components/common/Icons';
 import { useAuth } from '../context/AuthContext';
 import { validateEmail, validatePassword } from '../utils/validation';
-import { getDefaultDemoCredentials } from '../services/authService';
 import AuthCard from '../components/layout/AuthCard';
 import InputField from '../components/common/InputField';
 import AlertBanner from '../components/common/AlertBanner';
-import DemoNotice from '../components/common/DemoNotice';
 import './AuthPages.css';
 
 export default function Login() {
@@ -30,24 +28,25 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [alert, setAlert] = useState(null);
 
-  // If redirected with a message (e.g. after logout or registration)
+  // If redirected with a message (e.g. after registration or logout) or prefilled email
   useEffect(() => {
     if (location.state?.message) {
       setAlert({
         type: location.state.type || 'info',
         message: location.state.message
       });
-      // Clear location state to avoid repeating message on reload
+    }
+    if (location.state?.email) {
+      setFormData((prev) => ({
+        ...prev,
+        email: location.state.email
+      }));
+    }
+    if (location.state?.message || location.state?.email) {
+      // Clear location state so message is not repeated on manual reload
       window.history.replaceState({}, document.title);
     }
   }, [location]);
-
-  // If already logged in, provide option or allow dashboard redirect
-  useEffect(() => {
-    if (isAuthenticated) {
-      // If user navigates directly to /login while authenticated
-    }
-  }, [isAuthenticated]);
 
   // Handle Input Changes
   const handleChange = (e) => {
@@ -131,38 +130,24 @@ export default function Login() {
         navigate('/dashboard');
       }, 700);
     } catch (err) {
+      if (err.fieldErrors) {
+        setErrors((prev) => ({ ...prev, ...err.fieldErrors }));
+      }
       setAlert({
         type: 'error',
-        message: err.message || 'Failed to log in. Please try again.'
+        message: err.message || 'Failed to log in. Please check your credentials.'
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Quick Demo Auto-Fill helper
-  const handleQuickDemoFill = () => {
-    const demo = getDefaultDemoCredentials();
-    setFormData({
-      email: demo.email,
-      password: demo.password,
-      rememberMe: true
-    });
-    setErrors({});
-    setAlert({
-      type: 'info',
-      message: 'Demo credentials loaded! Click "Sign In" to proceed.'
-    });
-  };
-
   return (
     <AuthCard
       title="Welcome Back"
-      subtitle="Sign in to your demo account to access the dashboard"
+      subtitle="Sign in with your email and password to access the dashboard"
       icon={LogIn}
     >
-      <DemoNotice />
-
       {alert && (
         <AlertBanner
           type={alert.type}
@@ -170,23 +155,6 @@ export default function Login() {
           onClose={() => setAlert(null)}
         />
       )}
-
-      {/* Quick Demo Autofill Widget */}
-      <div className="demo-quick-fill-box">
-        <div className="quick-fill-info">
-          <span className="quick-fill-title">Quick Demo Login</span>
-          <span className="quick-fill-desc">Load sample credentials in one click</span>
-        </div>
-        <button
-          type="button"
-          onClick={handleQuickDemoFill}
-          className="btn-quick-fill"
-          title="Fill demo email and password"
-        >
-          <Sparkles size={14} />
-          Auto Fill
-        </button>
-      </div>
 
       <form onSubmit={handleSubmit} className="auth-form" noValidate>
         {/* Email Field */}
@@ -223,7 +191,7 @@ export default function Login() {
           disabled={isSubmitting}
         />
 
-        {/* Remember Me Checkbox & Forgot Password Link */}
+        {/* Remember Me Checkbox & Help Link */}
         <div className="form-options-row">
           <label className="remember-me-checkbox">
             <input
@@ -242,7 +210,7 @@ export default function Login() {
             onClick={() =>
               setAlert({
                 type: 'info',
-                message: 'In this frontend demo, you can use the "Auto Fill" button or register a new test account.'
+                message: 'Password reset is managed by the backend administrator. Please register a new account if needed.'
               })
             }
           >

@@ -25,7 +25,7 @@ export default function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
 
-              {/* Demo Dashboard */}
+              {/* Dashboard */}
               <Route path="/dashboard" element={<Dashboard />} />
 
               {/* Catch-all 404 Route */}
@@ -36,7 +36,7 @@ export default function App() {
           {/* Footer */}
           <footer className="app-footer">
             <p>
-              AuthFlow &bull; Frontend-Only React &amp; Vite Application &bull; Designed for Java Spring Boot &amp; MySQL
+              AuthFlow &bull; React &amp; Vite Frontend connected to Spring Boot REST API &amp; MySQL
             </p>
           </footer>
         </div>

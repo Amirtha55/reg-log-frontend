@@ -1,28 +1,29 @@
 /**
- * Utility functions for frontend form validation.
- * These rules can later be mirrored on the backend using Spring Boot Bean Validation (@NotBlank, @Email, @Size).
+ * Utility functions for form validation, mirroring Spring Boot Bean Validation
+ * annotations (@NotBlank, @Email, @Size).
  */
 
-// Regular expression for standard email validation
+// Regular expression for email validation
 export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-// Regular expression for general phone numbers (allows +, spaces, dashes, parentheses, 7 to 15 digits)
-export const PHONE_REGEX = /^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]{6,15}$/;
-
 /**
- * Validates a Full Name string.
+ * Validates Name string (min 2, max 100 chars).
  * @param {string} name 
  * @returns {string|null} Error message or null if valid.
  */
-export function validateFullName(name) {
+export function validateName(name) {
   if (!name || !name.trim()) {
-    return 'Full name is required.';
+    return 'Name is required.';
   }
-  if (name.trim().length < 2) {
-    return 'Full name must be at least 2 characters.';
+  const trimmed = name.trim();
+  if (trimmed.length < 2 || trimmed.length > 100) {
+    return 'Name must be between 2 and 100 characters.';
   }
   return null;
 }
+
+// Alias for backwards compatibility
+export const validateFullName = validateName;
 
 /**
  * Validates an Email address.
@@ -40,27 +41,7 @@ export function validateEmail(email) {
 }
 
 /**
- * Validates a Phone Number.
- * @param {string} phone 
- * @returns {string|null} Error message or null if valid.
- */
-export function validatePhone(phone) {
-  if (!phone || !phone.trim()) {
-    return 'Phone number is required.';
-  }
-  // Strip non-digit characters to check digit count
-  const digitsOnly = phone.replace(/\D/g, '');
-  if (digitsOnly.length < 10 || digitsOnly.length > 15) {
-    return 'Phone number must contain between 10 and 15 digits.';
-  }
-  if (!PHONE_REGEX.test(phone.trim())) {
-    return 'Please enter a valid phone number (e.g., +1 555-0199 or 9876543210).';
-  }
-  return null;
-}
-
-/**
- * Validates Password requirements.
+ * Validates Password requirements (min 6, max 50 chars).
  * @param {string} password 
  * @returns {string|null} Error message or null if valid.
  */
@@ -70,6 +51,9 @@ export function validatePassword(password) {
   }
   if (password.length < 6) {
     return 'Password must be at least 6 characters long.';
+  }
+  if (password.length > 50) {
+    return 'Password cannot exceed 50 characters.';
   }
   return null;
 }

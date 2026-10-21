@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Phone, Lock, UserPlus, ArrowRight } from '../components/common/Icons';
+import { User, Mail, Lock, UserPlus, ArrowRight } from '../components/common/Icons';
 import { useAuth } from '../context/AuthContext';
 import {
-  validateFullName,
+  validateName,
   validateEmail,
-  validatePhone,
   validatePassword,
   validateConfirmPassword,
   checkPasswordStrength
@@ -13,21 +12,18 @@ import {
 import AuthCard from '../components/layout/AuthCard';
 import InputField from '../components/common/InputField';
 import AlertBanner from '../components/common/AlertBanner';
-import DemoNotice from '../components/common/DemoNotice';
 import './AuthPages.css';
 
 export default function Register() {
   const navigate = useNavigate();
   const { register } = useAuth();
 
-  // Form Fields State
+  // Form Fields State (matching Spring Boot RegisterRequest: name, email, password)
   const [formData, setFormData] = useState({
-    fullName: '',
+    name: '',
     email: '',
-    phone: '',
     password: '',
-    confirmPassword: '',
-    agreeTerms: false
+    confirmPassword: ''
   });
 
   // Errors state
@@ -43,17 +39,16 @@ export default function Register() {
 
   // Handle Input Changes
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    const fieldValue = type === 'checkbox' ? checked : value;
+    const { name, value } = e.target;
 
     setFormData((prev) => ({
       ...prev,
-      [name]: fieldValue
+      [name]: value
     }));
 
     // If touched, re-validate immediately for real-time feedback
     if (touched[name]) {
-      validateSingleField(name, fieldValue);
+      validateSingleField(name, value);
     }
 
     // If changing password, also revalidate confirmPassword if already touched
@@ -75,14 +70,11 @@ export default function Register() {
     let error = null;
 
     switch (name) {
-      case 'fullName':
-        error = validateFullName(value);
+      case 'name':
+        error = validateName(value);
         break;
       case 'email':
         error = validateEmail(value);
-        break;
-      case 'phone':
-        error = validatePhone(value);
         break;
       case 'password':
         error = validatePassword(value);
@@ -104,30 +96,27 @@ export default function Register() {
 
   // Validate entire form before submission
   const validateForm = () => {
-    const nameErr = validateFullName(formData.fullName);
+    const nameErr = validateName(formData.name);
     const emailErr = validateEmail(formData.email);
-    const phoneErr = validatePhone(formData.phone);
     const passErr = validatePassword(formData.password);
     const confirmErr = validateConfirmPassword(formData.confirmPassword, formData.password);
 
     const newErrors = {
-      fullName: nameErr,
+      name: nameErr,
       email: emailErr,
-      phone: phoneErr,
       password: passErr,
       confirmPassword: confirmErr
     };
 
     setErrors(newErrors);
     setTouched({
-      fullName: true,
+      name: true,
       email: true,
-      phone: true,
       password: true,
       confirmPassword: true
     });
 
-    return !nameErr && !emailErr && !phoneErr && !passErr && !confirmErr;
+    return !nameErr && !emailErr && !passErr && !confirmErr;
   };
 
   // Handle Form Submission
@@ -147,22 +136,30 @@ export default function Register() {
     try {
       setIsSubmitting(true);
       const res = await register({
-        fullName: formData.fullName,
+        name: formData.name,
         email: formData.email,
-        phone: formData.phone,
         password: formData.password
       });
 
       setAlert({
         type: 'success',
-        message: res.message || 'Registration successful! Taking you to the dashboard...'
+        message: res.message ? `${res.message}! Redirecting to login...` : 'Registration successful! Redirecting to login...'
       });
 
-      // Redirect to dashboard after a brief delay so user sees success feedback
+      // Redirect to login after brief delay so user sees confirmation
       setTimeout(() => {
-        navigate('/dashboard');
-      }, 900);
+        navigate('/login', {
+          state: {
+            type: 'success',
+            message: res.message ? `${res.message}. Please sign in with your credentials.` : 'Registration successful! Please sign in.',
+            email: formData.email
+          }
+        });
+      }, 1000);
     } catch (err) {
+      if (err.fieldErrors) {
+        setErrors((prev) => ({ ...prev, ...err.fieldErrors }));
+      }
       setAlert({
         type: 'error',
         message: err.message || 'Registration failed. Please try again.'
@@ -175,11 +172,9 @@ export default function Register() {
   return (
     <AuthCard
       title="Create Account"
-      subtitle="Register a test profile to explore the frontend dashboard"
+      subtitle="Register a new account to get started"
       icon={UserPlus}
     >
-      <DemoNotice />
-
       {alert && (
         <AlertBanner
           type={alert.type}
@@ -189,17 +184,17 @@ export default function Register() {
       )}
 
       <form onSubmit={handleSubmit} className="auth-form" noValidate>
-        {/* Full Name */}
+        {/* Name Field */}
         <InputField
-          id="reg-fullname"
-          name="fullName"
+          id="reg-name"
+          name="name"
           type="text"
           label="Full Name"
           placeholder="e.g. John Doe"
-          value={formData.fullName}
+          value={formData.name}
           onChange={handleChange}
           onBlur={handleBlur}
-          error={touched.fullName ? errors.fullName : null}
+          error={touched.name ? errors.name : null}
           icon={User}
           required
           autoComplete="name"
@@ -220,23 +215,6 @@ export default function Register() {
           icon={Mail}
           required
           autoComplete="email"
-          disabled={isSubmitting}
-        />
-
-        {/* Phone Number */}
-        <InputField
-          id="reg-phone"
-          name="phone"
-          type="tel"
-          label="Phone Number"
-          placeholder="e.g. +1 555-0199 or 9876543210"
-          value={formData.phone}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          error={touched.phone ? errors.phone : null}
-          icon={Phone}
-          required
-          autoComplete="tel"
           disabled={isSubmitting}
         />
 
@@ -313,7 +291,7 @@ export default function Register() {
           {isSubmitting ? (
             <>
               <span className="spinner" aria-hidden="true"></span>
-              <span>Registering Profile...</span>
+              <span>Registering Account...</span>
             </>
           ) : (
             <>
